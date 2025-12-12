@@ -1,0 +1,168 @@
+@using RestaurantManagement.Models
+@{
+    ViewData["Title"] = "Финансов отчет";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-4">💰 Финансов отчет</h2>
+
+            <!-- Date Filter -->
+            <div class="card shadow-lg mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Начална дата</label>
+                            <input type="date" name="startDate" class="form-control" value="@ViewBag.StartDate?.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Крайна дата</label>
+                            <input type="date" name="endDate" class="form-control" value="@ViewBag.EndDate?.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">🔍 Филтрирай</button>
+                            <a asp-action="RevenueReport" class="btn btn-secondary">🔄 Нулирай</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="card bg-primary text-white shadow-lg">
+                        <div class="card-body">
+                            <h5 class="card-title">Общо приходи</h5>
+                            <h3 class="mb-0">@ViewBag.TotalRevenue.ToString("F2") лв</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-success text-white shadow-lg">
+                        <div class="card-body">
+                            <h5 class="card-title">Общо поръчки</h5>
+                            <h3 class="mb-0">@ViewBag.TotalOrders</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-info text-white shadow-lg">
+                        <div class="card-body">
+                            <h5 class="card-title">Средна стойност на поръчка</h5>
+                            <h3 class="mb-0">@ViewBag.AverageOrderValue.ToString("F2") лв</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Revenue by Day -->
+            @if (ViewBag.RevenueByDay != null && ((IEnumerable<dynamic>)ViewBag.RevenueByDay).Any())
+            {
+                <div class="card shadow-lg mb-4">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">📅 Приходи по дни</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Дата</th>
+                                        <th class="text-end">Приходи</th>
+                                        <th class="text-end">Брой поръчки</th>
+                                        <th class="text-end">Средна стойност</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var day in (IEnumerable<dynamic>)ViewBag.RevenueByDay)
+                                    {
+                                        var avgValue = (decimal)day.OrderCount > 0 ? (decimal)day.Revenue / (int)day.OrderCount : 0;
+                                        <tr>
+                                            <td>@(((DateTime)day.Date).ToString("dd.MM.yyyy"))</td>
+                                            <td class="text-end"><strong>@(((decimal)day.Revenue).ToString("F2")) лв</strong></td>
+                                            <td class="text-end">@day.OrderCount</td>
+                                            <td class="text-end">@avgValue.ToString("F2") лв</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-primary">
+                                        <th>ОБЩО</th>
+                                        <th class="text-end">@ViewBag.TotalRevenue.ToString("F2") лв</th>
+                                        <th class="text-end">@ViewBag.TotalOrders</th>
+                                        <th class="text-end">@ViewBag.AverageOrderValue.ToString("F2") лв</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Revenue by Payment Method -->
+            @if (ViewBag.RevenueByPayment != null && ((IEnumerable<dynamic>)ViewBag.RevenueByPayment).Any())
+            {
+                <div class="card shadow-lg mb-4">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">💳 Приходи по метод на плащане</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            @foreach (var item in (IEnumerable<dynamic>)ViewBag.RevenueByPayment)
+                            {
+                                <div class="col-md-6 mb-3">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">
+                                                @if (item.PaymentMethod == PaymentMethod.Cash)
+                                                {
+                                                    <span>💰 В брой</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>💳 С карта</span>
+                                                }
+                                            </h5>
+                                            <h3 class="text-primary">@(((decimal)item.Revenue).ToString("F2")) лв</h3>
+                                            <p class="text-muted mb-1">
+                                                @item.Count поръчки
+                                                @if (ViewBag.TotalRevenue != null && (decimal)ViewBag.TotalRevenue > 0)
+                                                {
+                                                    var percentage = ((decimal)item.Revenue / (decimal)ViewBag.TotalRevenue) * 100;
+                                                    <span class="badge bg-info">@percentage.ToString("F1")%</span>
+                                                }
+                                            </p>
+                                            <div class="progress mt-2" style="height: 10px;">
+                                                @if (ViewBag.TotalRevenue != null && (decimal)ViewBag.TotalRevenue > 0)
+                                                {
+                                                    var percentage = ((decimal)item.Revenue / (decimal)ViewBag.TotalRevenue) * 100;
+                                                    <div class="progress-bar @(item.PaymentMethod == PaymentMethod.Cash ? "bg-success" : "bg-primary")" 
+                                                         role="progressbar" 
+                                                         style="width: @percentage%"></div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    <h5>Няма данни за избрания период</h5>
+                    <p>Няма платени поръчки за избрания период от време.</p>
+                </div>
+            }
+
+            <!-- Back Button -->
+            <div class="text-center">
+                <a asp-action="Index" class="btn btn-secondary btn-lg">← Назад към главния панел</a>
+            </div>
+        </div>
+    </div>
+</div>
+

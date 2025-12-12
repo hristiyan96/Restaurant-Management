@@ -1,0 +1,55 @@
+@model RegisterViewModel
+@{
+    ViewData["Title"] = "Регистрация";
+}
+
+<div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-md-5">
+        <div class="card shadow-lg">
+            <div class="card-header bg-success text-white text-center">
+                <h4 class="mb-0">✨ Регистрация</h4>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Register" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label fw-bold">Имейл</label>
+                        <input asp-for="Email" class="form-control form-control-lg" placeholder="your@email.com" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="FullName" class="form-label fw-bold">Пълно име</label>
+                        <input asp-for="FullName" class="form-control form-control-lg" placeholder="Иван Иванов" />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label fw-bold">Парола</label>
+                        <input asp-for="Password" class="form-control form-control-lg" placeholder="Минимум 6 символа" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label asp-for="ConfirmPassword" class="form-label fw-bold">Потвърди парола</label>
+                        <input asp-for="ConfirmPassword" class="form-control form-control-lg" placeholder="Потвърди паролата" />
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-success btn-lg">Регистрирай се</button>
+                    </div>
+                    
+                    <div class="text-center">
+                        <p class="mb-0">Вече имате акаунт? <a asp-action="Login" class="text-decoration-none">Влезте тук</a></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

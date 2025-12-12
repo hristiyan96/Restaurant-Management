@@ -1,0 +1,319 @@
+@{
+    ViewData["Title"] = "Сервитьор Панел";
+    var activeOrders = ViewBag.ActiveOrders as List<RestaurantManagement.Models.Order>;
+    var tables = ViewBag.Tables as List<RestaurantManagement.Models.Table>;
+    var menuItems = ViewBag.MenuItems as List<RestaurantManagement.Models.MenuItem>;
+}
+
+<div class="container-fluid mt-4">
+    <h2 class="mb-4">📋 Сервитьор Панел</h2>
+    <div class="row">
+        <!-- Active Orders -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">⚡ Активни поръчки</h5>
+                </div>
+                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                    @if (activeOrders != null && activeOrders.Any())
+                    {
+                        @foreach (var order in activeOrders)
+                        {
+                            <div class="card mb-3 border-@(order.Status == OrderStatus.Pending ? "warning" : order.Status == OrderStatus.Preparing ? "info" : "success")">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="mb-0">🪑 Маса @order.Table.TableNumber</h6>
+                                        <span class="badge bg-@(order.Status == OrderStatus.Pending ? "warning" : order.Status == OrderStatus.Preparing ? "info" : order.Status == OrderStatus.Ready ? "success" : "primary")">
+                                            @order.Status
+                                        </span>
+                                    </div>
+                                    <div class="order-items mb-2">
+                                        @foreach (var item in order.OrderItems)
+                                        {
+                                            <div class="d-flex justify-content-between small">
+                                                <span>@item.Quantity x @item.MenuItem.Name</span>
+                                                <span>@(item.Price * item.Quantity) лв</span>
+                                            </div>
+                                        }
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <strong>Общо: @order.TotalAmount лв</strong>
+                                        <div>
+                                            @if (order.Status == OrderStatus.Ready)
+                                            {
+                                                <button class="btn btn-success btn-sm" onclick="updateOrderStatus('@order.Id', 'Served')">
+                                                    Сервирано
+                                                </button>
+                                            }
+                                            @if (order.Status == OrderStatus.Served)
+                                            {
+                                                <button class="btn btn-primary btn-sm" onclick="processPayment('@order.Id', @order.TotalAmount)">
+                                                    💳 Плащане
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center">Няма активни поръчки</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Tables -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">🪑 Маси</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        @foreach (var table in tables ?? new List<RestaurantManagement.Models.Table>())
+                        {
+                            <div class="col-6">
+                                <button class="btn btn-@(table.IsOccupied ? "danger" : "outline-success") w-100 table-btn p-3" 
+                                        data-table-id="@table.Id" 
+                                        data-table-number="@table.TableNumber"
+                                        @(table.IsOccupied ? "disabled" : "")>
+                                    <strong>Маса @table.TableNumber</strong><br>
+                                    <small>@table.Seats места</small>
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">🍽️ Меню</h5>
+                </div>
+                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                    @if (menuItems != null)
+                    {
+                        @foreach (var category in menuItems.GroupBy(m => m.Category))
+                        {
+                            <h6 class="text-muted mt-3 mb-2">@category.Key</h6>
+                            @foreach (var item in category)
+                            {
+                                <div class="card mb-2 menu-item">
+                                    <div class="card-body p-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="flex-grow-1">
+                                                <strong>@item.Name</strong>
+                                                <br>
+                                                <small class="text-muted">@item.Description</small>
+                                            </div>
+                                            <div class="text-end ms-2">
+                                                <div class="mb-1"><strong>@item.Price лв</strong></div>
+                                                <button class="btn btn-sm btn-primary add-to-order" 
+                                                        data-item-id="@item.Id" 
+                                                        data-item-name="@item.Name" 
+                                                        data-item-price="@item.Price">
+                                                    ➕ Добави
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center">Няма налични артикули</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Order Modal -->
+<div class="modal fade" id="orderModal" tabindex="-1" aria-labelledby="orderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="orderModalLabel">Нова поръчка - <span id="selectedTableName"></span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="orderItems"></div>
+                <hr>
+                <div class="d-flex justify-content-between">
+                    <strong>Общо: <span id="orderTotal">0.00 лв</span></strong>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отказ</button>
+                <button type="button" class="btn btn-primary" id="submitOrder">✅ Изпрати поръчка</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let selectedTableId = null;
+        let currentOrder = [];
+
+        $(document).ready(function() {
+            // Table selection
+            $('.table-btn').click(function() {
+                if (!$(this).prop('disabled')) {
+                    selectedTableId = $(this).data('table-id');
+                    $('#selectedTableName').text('Маса ' + $(this).data('table-number'));
+                    currentOrder = [];
+                    updateOrderModal();
+                    $('#orderModal').modal('show');
+                }
+            });
+
+            // Add item to order
+            $('.add-to-order').click(function() {
+                if (!selectedTableId) {
+                    alert('Моля изберете маса първо!');
+                    return;
+                }
+
+                const itemId = $(this).data('item-id');
+                const itemName = $(this).data('item-name');
+                const itemPrice = parseFloat($(this).data('item-price'));
+
+                const existingItem = currentOrder.find(item => item.menuItemId === itemId);
+                if (existingItem) {
+                    existingItem.quantity++;
+                } else {
+                    currentOrder.push({
+                        menuItemId: itemId,
+                        name: itemName,
+                        price: itemPrice,
+                        quantity: 1,
+                        notes: ''
+                    });
+                }
+
+                updateOrderModal();
+                if (!$('#orderModal').hasClass('show')) {
+                    $('#orderModal').modal('show');
+                }
+            });
+
+            // Submit order
+            $('#submitOrder').click(function() {
+                if (currentOrder.length === 0) {
+                    alert('Добавете поне един артикул!');
+                    return;
+                }
+
+                const orderData = {
+                    tableId: selectedTableId,
+                    items: currentOrder.map(item => ({
+                        menuItemId: item.menuItemId,
+                        quantity: item.quantity,
+                        notes: item.notes
+                    }))
+                };
+
+                $.ajax({
+                    url: '@Url.Action("CreateOrder", "Waiter")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(orderData),
+                    success: function(result) {
+                        if (result.success) {
+                            alert('Поръчката е изпратена успешно!');
+                            location.reload();
+                        } else {
+                            alert('Грешка: ' + result.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Възникна грешка при изпращането на поръчката!');
+                    }
+                });
+            });
+        });
+
+        function updateOrderModal() {
+            let html = '';
+            let total = 0;
+
+            currentOrder.forEach((item, index) => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+
+                html += `
+                    <div class="card mb-2">
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>${item.name}</strong>
+                                    <div class="input-group mt-2" style="width: 120px;">
+                                        <button class="btn btn-outline-secondary btn-sm" onclick="changeQuantity(${index}, -1)">-</button>
+                                        <input type="number" class="form-control form-control-sm text-center" value="${item.quantity}" readonly>
+                                        <button class="btn btn-outline-secondary btn-sm" onclick="changeQuantity(${index}, 1)">+</button>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="mb-2"><strong>${itemTotal.toFixed(2)} лв</strong></div>
+                                    <button class="btn btn-sm btn-danger" onclick="removeItem(${index})">🗑️ Премахни</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            $('#orderItems').html(html || '<p class="text-muted">Няма артикули в поръчката</p>');
+            $('#orderTotal').text(total.toFixed(2) + ' лв');
+        }
+
+        function changeQuantity(index, change) {
+            currentOrder[index].quantity += change;
+            if (currentOrder[index].quantity <= 0) {
+                currentOrder.splice(index, 1);
+            }
+            updateOrderModal();
+        }
+
+        function removeItem(index) {
+            currentOrder.splice(index, 1);
+            updateOrderModal();
+        }
+
+        function updateOrderStatus(orderId, status) {
+            $.ajax({
+                url: '@Url.Action("UpdateOrderStatus", "Waiter")',
+                type: 'POST',
+                data: { orderId: orderId, status: status },
+                success: function(result) {
+                    if (result.success) {
+                        location.reload();
+                    } else {
+                        alert('Грешка: ' + result.message);
+                    }
+                }
+            });
+        }
+
+        function processPayment(orderId, amount) {
+            // Redirect to payment page
+            window.location.href = '@Url.Action("Payment", "Waiter")?orderId=' + orderId;
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(function() {
+            location.reload();
+        }, 30000);
+    </script>
+}

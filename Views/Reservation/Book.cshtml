@@ -1,0 +1,215 @@
+@model ReservationViewModel
+@{
+    ViewData["Title"] = "Резервация на маса";
+    var availableTables = ViewBag.AvailableTables as List<RestaurantManagement.Models.Table> ?? new List<RestaurantManagement.Models.Table>();
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <h2 class="mb-0">📅 Резервация на маса</h2>
+                    <p class="mb-0 mt-2">Резервирайте маса в Златен Балкан</p>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Book" method="post" id="reservationForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="CustomerName" class="form-label fw-bold">Име *</label>
+                                <input asp-for="CustomerName" class="form-control form-control-lg" placeholder="Вашето име" />
+                                <span asp-validation-for="CustomerName" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="CustomerEmail" class="form-label fw-bold">Имейл *</label>
+                                <input asp-for="CustomerEmail" type="email" class="form-control form-control-lg" placeholder="your@email.com" />
+                                <span asp-validation-for="CustomerEmail" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="CustomerPhone" class="form-label fw-bold">Телефон</label>
+                            <input asp-for="CustomerPhone" type="tel" class="form-control form-control-lg" placeholder="+359 888 123 456" />
+                            <span asp-validation-for="CustomerPhone" class="text-danger"></span>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="ReservationDateTime" class="form-label fw-bold">Дата и час *</label>
+                                <input asp-for="ReservationDateTime" type="datetime-local" class="form-control form-control-lg" />
+                                <span asp-validation-for="ReservationDateTime" class="text-danger"></span>
+                                <small class="form-text text-muted">Моля изберете дата и час за резервацията</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="NumberOfGuests" class="form-label fw-bold">Брой гости *</label>
+                                <input asp-for="NumberOfGuests" type="number" min="1" max="20" class="form-control form-control-lg" />
+                                <span asp-validation-for="NumberOfGuests" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Notes" class="form-label fw-bold">Бележки (по избор)</label>
+                            <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Специални изисквания, алергии, празнуване..."></textarea>
+                            <span asp-validation-for="Notes" class="text-danger"></span>
+                        </div>
+
+                        <input type="hidden" asp-for="SelectedTableId" id="SelectedTableId" />
+
+                        <!-- Check Availability Button -->
+                        <div class="mb-4">
+                            <button type="button" class="btn btn-info btn-lg w-100" id="checkAvailabilityBtn" onclick="checkAvailability()">
+                                🔍 Провери наличност
+                            </button>
+                            <div id="availabilityStatus" class="mt-2"></div>
+                        </div>
+
+                        <!-- Available Tables Section -->
+                        <div id="availableTablesSection" style="display: none;">
+                            <h5 class="mb-3">Налични маси:</h5>
+                            <div class="row g-3 mb-4" id="tablesContainer">
+                                <!-- Tables will be loaded here dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg" id="submitBtn" disabled>
+                                ✅ Потвърди резервацията
+                            </button>
+                            <a asp-controller="Home" asp-action="Index" class="btn btn-secondary btn-lg">
+                                Отказ
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        let selectedTableId = null;
+
+        $(document).ready(function() {
+            // Set minimum date/time to tomorrow
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(18, 0, 0, 0);
+            
+            const minDate = tomorrow.toISOString().slice(0, 16);
+            $('#ReservationDateTime').attr('min', minDate);
+
+            // Auto-check availability when date or guests change
+            $('#ReservationDateTime, #NumberOfGuests').on('change', function() {
+                selectedTableId = null;
+                $('#submitBtn').prop('disabled', true);
+                $('#availableTablesSection').hide();
+            });
+        });
+
+        async function checkAvailability() {
+            const dateTime = $('#ReservationDateTime').val();
+            const numberOfGuests = $('#NumberOfGuests').val();
+
+            if (!dateTime || !numberOfGuests || numberOfGuests < 1) {
+                alert('Моля попълнете дата и брой гости!');
+                return;
+            }
+
+            // Validate date is in future
+            const selectedDate = new Date(dateTime);
+            if (selectedDate <= new Date()) {
+                alert('Резервацията трябва да бъде в бъдещо време!');
+                return;
+            }
+
+            $('#checkAvailabilityBtn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status"></span> Проверяване...');
+            $('#availabilityStatus').html('');
+
+            try {
+                const response = await fetch('@Url.Action("CheckAvailability", "Reservation")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        reservationDateTime: dateTime,
+                        numberOfGuests: parseInt(numberOfGuests)
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    if (result.tables && result.tables.length > 0) {
+                        displayAvailableTables(result.tables);
+                        $('#availabilityStatus').html('<div class="alert alert-success">✅ Налични са ' + result.tables.length + ' маси!</div>');
+                    } else {
+                        $('#availableTablesSection').hide();
+                        $('#availabilityStatus').html('<div class="alert alert-warning">⚠️ Няма налични маси за избраната дата и час. Моля изберете друга дата.</div>');
+                    }
+                } else {
+                    $('#availableTablesSection').hide();
+                    $('#availabilityStatus').html('<div class="alert alert-danger">❌ Грешка: ' + (result.message || 'Неуспешна проверка') + '</div>');
+                }
+            } catch (error) {
+                $('#availableTablesSection').hide();
+                $('#availabilityStatus').html('<div class="alert alert-danger">❌ Възникна грешка при проверката на наличността!</div>');
+                console.error(error);
+            } finally {
+                $('#checkAvailabilityBtn').prop('disabled', false).html('🔍 Провери наличност');
+            }
+        }
+
+        function displayAvailableTables(tables) {
+            const container = $('#tablesContainer');
+            container.empty();
+
+            tables.forEach(function(table) {
+                const tableCard = `
+                    <div class="col-md-4 col-sm-6">
+                        <div class="card table-card h-100 ${selectedTableId === table.id ? 'border-primary border-3' : ''}" 
+                             onclick="selectTable('${table.id}', ${table.seats})"
+                             style="cursor: pointer; transition: all 0.3s;">
+                            <div class="card-body text-center p-3">
+                                <div class="mb-2" style="font-size: 2rem;">🪑</div>
+                                <h5 class="card-title">Маса ${table.tableNumber}</h5>
+                                <p class="card-text text-muted mb-0">${table.seats} места</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.append(tableCard);
+            });
+
+            $('#availableTablesSection').slideDown();
+        }
+
+        function selectTable(tableId, seats) {
+            selectedTableId = tableId;
+            $('#SelectedTableId').val(tableId);
+            $('#submitBtn').prop('disabled', false);
+            
+            // Update card styling
+            $('.table-card').removeClass('border-primary border-3').addClass('border');
+            $(`.table-card[onclick*="${tableId}"]`).removeClass('border').addClass('border-primary border-3');
+        }
+    </script>
+
+    <style>
+        .table-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .table-card {
+            border: 1px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+    </style>
+}
+

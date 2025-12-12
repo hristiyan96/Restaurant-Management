@@ -1,0 +1,164 @@
+@{
+    ViewData["Title"] = "Най-поръчвани артикули";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-4">📈 Най-поръчвани артикули</h2>
+
+            <!-- Filters -->
+            <div class="card shadow-lg mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Начална дата</label>
+                            <input type="date" name="startDate" class="form-control" value="@ViewBag.StartDate?.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Крайна дата</label>
+                            <input type="date" name="endDate" class="form-control" value="@ViewBag.EndDate?.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Категория</label>
+                            <select name="category" class="form-select">
+                                <option value="">Всички категории</option>
+                                @if (ViewBag.Categories != null)
+                                {
+                                    @foreach (var cat in (List<string>)ViewBag.Categories)
+                                    {
+                                        <option value="@cat" selected="@(ViewBag.SelectedCategory == cat)">@cat</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">🔍 Филтрирай</button>
+                            <a asp-action="PopularItems" class="btn btn-secondary">🔄 Нулирай</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Popular Items Table -->
+            @if (ViewBag.PopularItems != null && ((IEnumerable<dynamic>)ViewBag.PopularItems).Any())
+            {
+                <div class="card shadow-lg">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">
+                            ⭐ Топ артикули 
+                            @if (!string.IsNullOrEmpty((string)ViewBag.SelectedCategory))
+                            {
+                                <span class="badge bg-light text-dark">Категория: @ViewBag.SelectedCategory</span>
+                            }
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px;">#</th>
+                                        <th>Име</th>
+                                        <th>Категория</th>
+                                        <th>Цена</th>
+                                        <th class="text-end">Поръчано количество</th>
+                                        <th class="text-end">Общо приходи</th>
+                                        <th class="text-end">Брой поръчки</th>
+                                        <th class="text-end">Средно на поръчка</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        int rank = 1;
+                                        var items = (IEnumerable<dynamic>)ViewBag.PopularItems;
+                                    }
+                                    @foreach (var item in items)
+                                    {
+                                        var avgPerOrder = (decimal)item.OrderCount > 0 ? (decimal)item.TotalQuantity / (int)item.OrderCount : 0;
+                                        <tr>
+                                            <td>
+                                                @if (rank <= 3)
+                                                {
+                                                    <span class="badge bg-@(rank == 1 ? "warning" : rank == 2 ? "secondary" : "danger") text-dark" style="font-size: 1rem;">
+                                                        @rank
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <strong>@rank</strong>
+                                                }
+                                            </td>
+                                            <td>
+                                                <strong>@item.Name</strong>
+                                                @if (!string.IsNullOrEmpty((string)item.Description))
+                                                {
+                                                    <br><small class="text-muted">@item.Description</small>
+                                                }
+                                            </td>
+                                            <td><span class="badge bg-info">@item.Category</span></td>
+                                            <td>@(((decimal)item.Price).ToString("F2")) лв</td>
+                                            <td class="text-end"><strong>@item.TotalQuantity</strong></td>
+                                            <td class="text-end text-success"><strong>@(((decimal)item.TotalRevenue).ToString("F2")) лв</strong></td>
+                                            <td class="text-end">@item.OrderCount</td>
+                                            <td class="text-end">@avgPerOrder.ToString("F1")</td>
+                                        </tr>
+                                        rank++;
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Summary Stats -->
+                        @{
+                            var itemsList = items.ToList();
+                            if (itemsList.Any())
+                            {
+                                decimal totalQuantity = 0;
+                                decimal totalRevenue = 0;
+                                int totalOrderCount = 0;
+
+                                foreach (var item in itemsList)
+                                {
+                                    totalQuantity += (int)item.TotalQuantity;
+                                    totalRevenue += (decimal)item.TotalRevenue;
+                                    totalOrderCount += (int)item.OrderCount;
+                                }
+                                
+                                <div class="mt-4 p-3 bg-light rounded">
+                                    <div class="row text-center">
+                                        <div class="col-md-4">
+                                            <h5 class="text-muted">Общо количество</h5>
+                                            <h3 class="text-primary">@totalQuantity</h3>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h5 class="text-muted">Общи приходи</h5>
+                                            <h3 class="text-success">@totalRevenue.ToString("F2") лв</h3>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h5 class="text-muted">Брой поръчки</h5>
+                                            <h3 class="text-info">@totalOrderCount</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    <h5>Няма данни</h5>
+                    <p>Няма поръчани артикули за избрания период и категория.</p>
+                </div>
+            }
+
+            <!-- Back Button -->
+            <div class="text-center mt-4">
+                <a asp-action="Index" class="btn btn-secondary btn-lg">← Назад към главния панел</a>
+            </div>
+        </div>
+    </div>
+</div>
+

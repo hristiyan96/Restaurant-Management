@@ -1,0 +1,244 @@
+﻿@{
+    ViewData["Title"] = "Начална страница";
+}
+
+<div class="hero-section" style="background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80') center/cover no-repeat; min-height: 80vh; display: flex; align-items: center; justify-content: center; color: white; position: relative;">
+    <div class="container text-center">
+        <div class="hero-content" style="animation: fadeInUp 1s ease-out;">
+            <div class="restaurant-logo hero-logo mb-4" style="justify-content: center;">
+                <div class="logo-icon">
+                    ⭐
+                </div>
+                <div>
+                    <span class="logo-text" style="color: #ffd700; text-shadow: 2px 2px 8px rgba(0,0,0,0.8);">Златен Балкан</span>
+                    <span class="logo-subtitle" style="color: rgba(255,255,255,0.9); text-shadow: 1px 1px 4px rgba(0,0,0,0.8);">РЕСТОРАНТ</span>
+                </div>
+            </div>
+            <p class="lead mb-5" style="font-size: 1.5rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">
+                Автентична балканска кухня с модерен вкус
+            </p>
+           
+                <div class="mt-3">
+                    <a asp-controller="Auth" asp-action="Login" class="btn btn-light btn-lg me-3 px-5 py-3" style="font-size: 1.2rem; border-radius: 50px;">
+                        🔐 Вход
+                    </a>
+                    <a asp-controller="Auth" asp-action="Register" class="btn btn-outline-light btn-lg px-5 py-3" style="font-size: 1.2rem; border-radius: 50px; border-width: 3px;">
+                        ✨ Регистрация
+                    </a>
+                </div>
+                <div class="mt-4">
+                    <a href="/Setup/CreateManager" class="btn btn-outline-warning btn-lg px-4 py-2" style="font-size: 1rem; border-radius: 50px; border-width: 2px;">
+                        👤 Създай Мениджър акаунт
+                    </a>
+                    <p class="mt-2 small" style="opacity: 0.8;"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scroll indicator -->
+    <div class="scroll-indicator" style="position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); animation: bounce 2s infinite;">
+        <i class="bi bi-chevron-down" style="font-size: 2rem; color: white;"></i>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="container my-5">
+    <div class="row text-center mb-5">
+        <div class="col-12">
+            <h2 class="display-5 mb-4">Защо да изберете Златен Балкан?</h2>
+            <p class="lead text-muted">Автентична балканска кухня, изискана обстановка и незабравимо изживяване</p>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-lg border-0 text-center p-4 feature-card" style="transition: transform 0.3s;">
+                <div class="card-body">
+                    <div class="feature-icon mb-3" style="font-size: 4rem;">📋</div>
+                    <h4 class="card-title fw-bold">Управление на поръчки</h4>
+                    <p class="card-text text-muted">
+                        Лесно създаване и проследяване на поръчки от сервитьорите. Реално време актуализации на статуса.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 shadow-lg border-0 text-center p-4 feature-card" style="transition: transform 0.3s;">
+                <div class="card-body">
+                    <div class="feature-icon mb-3" style="font-size: 4rem;">🪑</div>
+                    <h4 class="card-title fw-bold">Управление на маси</h4>
+                    <p class="card-text text-muted">
+                        Визуално представяне на масите с техния статус. Лесно разпределение на клиенти.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 shadow-lg border-0 text-center p-4 feature-card" style="transition: transform 0.3s;">
+                <div class="card-body">
+                    <div class="feature-icon mb-3" style="font-size: 4rem;">👨‍🍳</div>
+                    <h4 class="card-title fw-bold">Кухненски дисплей</h4>
+                    <p class="card-text text-muted">
+                        Специален панел за кухнята с преглед на поръчки и възможност за актуализация на статуса.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Restaurant Image Gallery -->
+<div class="container-fluid bg-light py-5">
+    <div class="container">
+        <div class="row text-center mb-4">
+            <div class="col-12">
+                <h2 class="display-5 mb-3">Нашата ресторантна среда</h2>
+                <p class="lead text-muted">Елегантна обстановка за незабравимо изживяване</p>
+            </div>
+        </div>
+        
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="restaurant-image" style="border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transition: transform 0.3s;">
+                    <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                         alt="Ресторант интериор" 
+                         class="img-fluid w-100" 
+                         style="height: 300px; object-fit: cover; background-color: #f0f0f0;"
+                         onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80';">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="restaurant-image" style="border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transition: transform 0.3s;">
+                    <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                         alt="Ресторант маси" 
+                         class="img-fluid w-100" 
+                         style="height: 300px; object-fit: cover;"
+                         onerror="this.src='https://via.placeholder.com/800x300/E8E8E8/666666?text=Restaurant+Tables'">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="restaurant-image" style="border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transition: transform 0.3s;">
+                    <img src="https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                         alt="Ресторант храна" 
+                         class="img-fluid w-100" 
+                         style="height: 300px; object-fit: cover;"
+                         onerror="this.src='https://via.placeholder.com/800x300/E8E8E8/666666?text=Restaurant+Food'">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reservation Section -->
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0 p-5" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border-radius: 20px;">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="display-5 mb-3">📅 Резервирайте маса</h2>
+                        <p class="lead mb-4">Осигурете си маса в Златен Балкан! Бързо и лесно резервиране онлайн.</p>
+                        <a asp-controller="Reservation" asp-action="Book" class="btn btn-light btn-lg px-5 py-3" style="font-size: 1.2rem; border-radius: 50px;">
+                            📅 Резервирайте сега
+                        </a>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div style="font-size: 8rem;">🪑</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Call to Action -->
+<div class="container my-5 text-center">
+    <div class="card shadow-lg border-0 p-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 20px;">
+        <h2 class="display-5 mb-4">Готови сте да започнете?</h2>
+        <p class="lead mb-4">Регистрирайте се сега и опитайте системата безплатно!</p>
+        <a asp-controller="Auth" asp-action="Register" class="btn btn-light btn-lg px-5 py-3" style="font-size: 1.2rem; border-radius: 50px;">
+            🚀 Започнете сега
+        </a>
+    </div>
+</div>
+
+<style>
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @@keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateX(-50%) translateY(0);
+        }
+        40% {
+            transform: translateX(-50%) translateY(-10px);
+        }
+        60% {
+            transform: translateX(-50%) translateY(-5px);
+        }
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-10px);
+        cursor: pointer;
+    }
+    
+    .restaurant-image:hover {
+        transform: scale(1.05);
+    }
+    
+    .hero-section {
+        margin-top: -56px; /* Offset for navbar */
+        padding-top: 56px;
+    }
+    
+    @@media (max-width: 768px) {
+        .hero-section {
+            min-height: 60vh;
+        }
+        
+        .display-3 {
+            font-size: 2rem;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // Add smooth scroll animation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate feature cards on scroll
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -100px 0px'
+            };
+            
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+            
+            document.querySelectorAll('.feature-card').forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                card.style.transition = 'all 0.6s ease-out';
+                observer.observe(card);
+            });
+        });
+    </script>
+}

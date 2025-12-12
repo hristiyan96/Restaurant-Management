@@ -1,0 +1,116 @@
+@model Reservation
+@{
+    ViewData["Title"] = "Потвърждение на резервация";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-success">
+                <div class="card-header bg-success text-white text-center py-4">
+                    <h2 class="mb-0">✅ Резервацията е потвърдена!</h2>
+                </div>
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <div style="font-size: 5rem;">🎉</div>
+                        <h3 class="mt-3">Благодарим за резервацията!</h3>
+                        <p class="text-muted">Вашата резервация е успешно направена. Очакваме ви в ресторанта!</p>
+                    </div>
+
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title mb-4">📋 Детайли на резервацията</h5>
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-4"><strong>Номер на резервация:</strong></div>
+                                <div class="col-sm-8">#@Model.Id.ToString().Substring(0, 8).ToUpper()</div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-4"><strong>Име:</strong></div>
+                                <div class="col-sm-8">@Model.CustomerName</div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-4"><strong>Имейл:</strong></div>
+                                <div class="col-sm-8">@Model.CustomerEmail</div>
+                            </div>
+                            
+                            @if (!string.IsNullOrEmpty(Model.CustomerPhone))
+                            {
+                                <div class="row mb-3">
+                                    <div class="col-sm-4"><strong>Телефон:</strong></div>
+                                    <div class="col-sm-8">@Model.CustomerPhone</div>
+                                </div>
+                            }
+                            
+                            <hr>
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-4"><strong>Дата и час:</strong></div>
+                                <div class="col-sm-8">
+                                    <strong>@Model.ReservationDateTime.ToString("dd.MM.yyyy")</strong> в 
+                                    <strong>@Model.ReservationDateTime.ToString("HH:mm")</strong>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-4"><strong>Маса:</strong></div>
+                                <div class="col-sm-8">🪑 Маса @Model.Table.TableNumber</div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-4"><strong>Брой гости:</strong></div>
+                                <div class="col-sm-8">@Model.NumberOfGuests @(Model.NumberOfGuests == 1 ? "гост" : "гости")</div>
+                            </div>
+                            
+                            @if (!string.IsNullOrEmpty(Model.Notes))
+                            {
+                                <div class="row mb-3">
+                                    <div class="col-sm-4"><strong>Бележки:</strong></div>
+                                    <div class="col-sm-8">@Model.Notes</div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <h6 class="alert-heading">ℹ️ Важна информация:</h6>
+                        <ul class="mb-0">
+                            <li>Моля пристигнете навреме за вашата резервация</li>
+                            <li>Резервацията е валидна за <strong>2 часа</strong></li>
+                            <li>Ако имате промени, моля свържете се с нас на телефон</li>
+                            <li>Потвърждение за резервация е изпратено на вашия имейл</li>
+                        </ul>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg">
+                            🏠 Начална страница
+                        </a>
+                        <a asp-controller="Reservation" asp-action="Book" class="btn btn-outline-secondary btn-lg">
+                            📅 Направи нова резервация
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 15px;
+    }
+    
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+    }
+</style>
+
+
+
+
+

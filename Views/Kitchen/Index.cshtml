@@ -1,0 +1,272 @@
+@model List<RestaurantManagement.Models.Order>
+@{
+    ViewData["Title"] = "Кухненски панел";
+    var filter = ViewBag.Filter as string ?? "active";
+    var stats = ViewBag.Stats;
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-3">👨‍🍳 Кухненски панел</h2>
+            
+            <!-- Statistics Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-warning text-dark">
+                        <div class="card-body text-center">
+                            <h3 class="mb-0">@(stats?.Pending ?? 0)</h3>
+                            <small>Чакащи</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <h3 class="mb-0">@(stats?.Preparing ?? 0)</h3>
+                            <small>В приготвяне</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <h3 class="mb-0">@(stats?.Ready ?? 0)</h3>
+                            <small>Готови</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-secondary text-white">
+                        <div class="card-body text-center">
+                            <h3 class="mb-0">@(stats?.Today ?? 0)</h3>
+                            <small>Днес общо</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Buttons -->
+            <div class="btn-group mb-3" role="group">
+                <a href="?filter=active" class="btn btn-@(filter == "active" ? "primary" : "outline-primary")">Активни</a>
+                <a href="?filter=pending" class="btn btn-@(filter == "pending" ? "warning" : "outline-warning")">Чакащи (@(stats?.Pending ?? 0))</a>
+                <a href="?filter=preparing" class="btn btn-@(filter == "preparing" ? "info" : "outline-info")">Приготвяне (@(stats?.Preparing ?? 0))</a>
+                <a href="?filter=ready" class="btn btn-@(filter == "ready" ? "success" : "outline-success")">Готови (@(stats?.Ready ?? 0))</a>
+                <a href="?filter=all" class="btn btn-@(filter == "all" ? "secondary" : "outline-secondary")">Всички</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders Display -->
+    <div class="row">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var order in Model)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card shadow-sm h-100 border-@(order.Status == OrderStatus.Pending ? "warning" : order.Status == OrderStatus.Preparing ? "info" : order.Status == OrderStatus.Ready ? "success" : "secondary")">
+                        <div class="card-header bg-@(order.Status == OrderStatus.Pending ? "warning" : order.Status == OrderStatus.Preparing ? "info" : order.Status == OrderStatus.Ready ? "success" : "secondary") text-dark">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">🪑 Маса @order.Table.TableNumber</h5>
+                                <span class="badge bg-dark">@order.Status</span>
+                            </div>
+                            <div class="mt-2">
+                                <small>👤 Сервитьор: <strong>@order.Waiter?.FullName</strong></small><br>
+                                <small>🕐 Час: <strong>@order.CreatedAt.ToString("HH:mm")</strong></small><br>
+                                @if (order.Status == OrderStatus.Preparing || order.Status == OrderStatus.Ready)
+                                {
+                                    <small>⏱️ Време: <strong id="time-@order.Id">@((DateTime.UtcNow - order.CreatedAt).TotalMinutes.ToString("F0")) мин</strong></small>
+                                }
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-3">📋 Поръчани артикули:</h6>
+                            <div class="list-group mb-3" style="max-height: 300px; overflow-y: auto;">
+                                @foreach (var item in order.OrderItems)
+                                {
+                                    <div class="list-group-item d-flex justify-content-between align-items-center @(item.IsReady ? "list-group-item-success" : "")">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex align-items-center">
+                                                <strong class="me-2">@item.Quantity x</strong>
+                                                <span>@item.MenuItem.Name</span>
+                                            </div>
+                                            @if (!string.IsNullOrEmpty(item.Notes))
+                                            {
+                                                <small class="text-muted d-block">📝 @item.Notes</small>
+                                            }
+                                            <small class="text-muted d-block">💰 @item.Price лв × @item.Quantity = @(item.Price * item.Quantity) лв</small>
+                                        </div>
+                                        <div>
+                                            @if (!item.IsReady && (order.Status == OrderStatus.Pending || order.Status == OrderStatus.Preparing))
+                                            {
+                                                <button class="btn btn-sm btn-success" onclick="markItemReady('@item.Id')" title="Маркирай като готов">
+                                                    ✅
+                                                </button>
+                                            }
+                                            else if (item.IsReady)
+                                            {
+                                                <span class="badge bg-success">✅ Готов</span>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <strong class="fs-5">Общо: @order.TotalAmount лв</strong>
+                                </div>
+                                <div>
+                                    @{
+                                        var allItemsReady = order.OrderItems.All(oi => oi.IsReady || order.OrderItems.Count == 0);
+                                    }
+                                    @if (allItemsReady && order.Status == OrderStatus.Preparing)
+                                    {
+                                        <span class="badge bg-success">Всички артикули готови!</span>
+                                    }
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2">
+                                @if (order.Status == OrderStatus.Pending)
+                                {
+                                    <button class="btn btn-primary btn-lg" onclick="startPreparing('@order.Id')">
+                                        🍳 Започни приготвяне
+                                    </button>
+                                }
+                                else if (order.Status == OrderStatus.Preparing)
+                                {
+                                    <button class="btn btn-success btn-lg" onclick="markReady('@order.Id')" @(allItemsReady ? "" : "disabled")>
+                                        ✅ Маркирай като готово @(allItemsReady ? "" : "(всички артикули трябва да са готови)")
+                                    </button>
+                                }
+                                else if (order.Status == OrderStatus.Ready)
+                                {
+                                    <div class="alert alert-success mb-0 text-center">
+                                        ✅ Поръчката е готова и очаква сервиране
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="card shadow">
+                    <div class="card-body text-center py-5">
+                        <h3>🍽️ Няма поръчки</h3>
+                        <p class="text-muted mb-0">
+                            @if (filter == "active" || filter == "pending" || filter == "preparing")
+                            {
+                                <text>Всички активни поръчки са обработени! 🎉</text>
+                            }
+                            else
+                            {
+                                <text>Няма поръчки за показване с избрания филтър.</text>
+                            }
+                        </p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function startPreparing(orderId) {
+            if (!confirm('Наистина ли искате да започнете приготвянето на тази поръчка?')) {
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("StartPreparing", "Kitchen")',
+                type: 'POST',
+                data: { orderId: orderId },
+                success: function(result) {
+                    if (result.success) {
+                        location.reload();
+                    } else {
+                        alert('Грешка: ' + result.message);
+                    }
+                },
+                error: function() {
+                    alert('Възникна грешка при обработката!');
+                }
+            });
+        }
+
+        function markReady(orderId) {
+            if (!confirm('Потвърдете, че поръчката е напълно готова и може да бъде сервирана.')) {
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("MarkReady", "Kitchen")',
+                type: 'POST',
+                data: { orderId: orderId },
+                success: function(result) {
+                    if (result.success) {
+                        location.reload();
+                    } else {
+                        alert('Грешка: ' + result.message);
+                    }
+                },
+                error: function() {
+                    alert('Възникна грешка при обработката!');
+                }
+            });
+        }
+
+        function markItemReady(orderItemId) {
+            $.ajax({
+                url: '@Url.Action("MarkItemReady", "Kitchen")',
+                type: 'POST',
+                data: { orderItemId: orderItemId },
+                success: function(result) {
+                    if (result.success) {
+                        location.reload();
+                    } else {
+                        alert('Грешка: ' + result.message);
+                    }
+                },
+                error: function() {
+                    alert('Възникна грешка при обработката!');
+                }
+            });
+        }
+
+        // Update elapsed time for preparing/ready orders
+        function updateElapsedTimes() {
+            @if (Model != null)
+            {
+                foreach (var order in Model.Where(o => o.Status == OrderStatus.Preparing || o.Status == OrderStatus.Ready))
+                {
+                    <text>
+                    var orderTime = '@order.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")';
+                    var elapsed = Math.floor((new Date() - new Date(orderTime)) / 60000);
+                    var timeElement = document.getElementById('time-@order.Id');
+                    if (timeElement) {
+                        timeElement.textContent = elapsed + ' мин';
+                    }
+                    </text>
+                }
+            }
+        }
+
+        // Auto-refresh every 10 seconds
+        setInterval(function() {
+            updateElapsedTimes();
+        }, 60000);
+
+        // Full page refresh every 30 seconds to get new orders
+        setInterval(function() {
+            location.reload();
+        }, 30000);
+
+        // Initial time update
+        updateElapsedTimes();
+    </script>
+}

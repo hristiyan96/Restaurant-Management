@@ -1,0 +1,463 @@
+@{
+    ViewData["Title"] = "Плащане";
+    var order = ViewBag.Order as RestaurantManagement.Models.Order;
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3 class="mb-0">💳 Плащане</h3>
+                </div>
+                <div class="card-body">
+                    @if (order != null)
+                    {
+                        <!-- Order Summary -->
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title">📋 Детайли на поръчката</h5>
+                                <hr>
+                                <div class="row mb-2">
+                                    <div class="col-6"><strong>Маса:</strong></div>
+                                    <div class="col-6">@order.Table.TableNumber</div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-6"><strong>Поръчка #:</strong></div>
+                                    <div class="col-6">@order.Id.ToString().Substring(0, 8)...</div>
+                                </div>
+                                <hr>
+                                <h6>Артикули:</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Артикул</th>
+                                                <th class="text-center">Количество</th>
+                                                <th class="text-end">Цена</th>
+                                                <th class="text-end">Общо</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in order.OrderItems)
+                                            {
+                                                <tr>
+                                                    <td>@item.MenuItem.Name</td>
+                                                    <td class="text-center">@item.Quantity</td>
+                                                    <td class="text-end">@item.Price лв</td>
+                                                    <td class="text-end">@((item.Price * item.Quantity).ToString("F2")) лв</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h4 class="mb-0">Обща сума:</h4>
+                                    <h4 class="mb-0 text-primary">@order.TotalAmount.ToString("F2") лв</h4>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Methods -->
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title mb-4">Избери начин на плащане</h5>
+                                <div class="row g-3">
+                                    <!-- Cash Payment -->
+                                    <div class="col-md-6">
+                                        <div class="card payment-method-card" id="cashCard" onclick="selectPaymentMethod('cash')">
+                                            <div class="card-body text-center p-4">
+                                                <div class="mb-3" style="font-size: 3rem;">
+                                                    💰
+                                                </div>
+                                                <h5 class="card-title">Плащане в брой</h5>
+                                                <p class="text-muted small">Плащане на каса при сервитьора</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Card Payment -->
+                                    <div class="col-md-6">
+                                        <div class="card payment-method-card" id="cardCard" onclick="selectPaymentMethod('card')">
+                                            <div class="card-body text-center p-4">
+                                                <div class="mb-3" style="font-size: 3rem;">
+                                                    💳
+                                                </div>
+                                                <h5 class="card-title">Плащане с карта</h5>
+                                                <p class="text-muted small">Безопасно плащане с кредитна/дебитна карта</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cash Payment Section -->
+                        <div id="cashPaymentSection" style="display: none;">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="card-title">Потвърждение за плащане в брой</h5>
+                                    <p>Обща сума за плащане: <strong>@order.TotalAmount.ToString("F2") лв</strong></p>
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-success btn-lg" onclick="processCashPayment('@order.Id')">
+                                            ✅ Потвърди плащането в брой
+                                        </button>
+                                        <button class="btn btn-secondary" onclick="cancelPayment()">
+                                            Отказ
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card Payment Section -->
+                        <div id="cardPaymentSection" style="display: none;">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="card-title">Плащане с карта</h5>
+                                    
+                                    @if (ViewBag.TestMode == true)
+                                    {
+                                        <div class="alert alert-info">
+                                            <h6 class="alert-heading">🧪 Тест режим активен</h6>
+                                            <p>Плащането с карта работи в тестов режим без нужда от реальни Stripe ключове.</p>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Тест карта:</label>
+                                            <input type="text" class="form-control" value="4242 4242 4242 4242" readonly>
+                                            <small class="text-muted">Можете да използвате всякакви тест данни</small>
+                                        </div>
+                                        <div class="d-grid gap-2">
+                                            <button class="btn btn-primary btn-lg" id="submitCardPayment" onclick="processTestCardPayment('@order.Id')">
+                                                💳 Плати @order.TotalAmount.ToString("F2") лв (Test Mode)
+                                            </button>
+                                            <button class="btn btn-secondary" onclick="cancelPayment()">
+                                                Отказ
+                                            </button>
+                                        </div>
+                                        <div id="payment-loading" style="display: none;" class="text-center mt-3">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Зареждане...</span>
+                                            </div>
+                                            <p class="mt-2">Обработване на плащането...</p>
+                                        </div>
+                                    }
+                                    else if (ViewBag.StripePublishableKey == null || ViewBag.StripePublishableKey.ToString().Contains("your_publishable_key"))
+                                    {
+                                        <div class="alert alert-warning">
+                                            <h6 class="alert-heading">⚠️ Stripe не е конфигуриран</h6>
+                                            <p>За да използвате плащания с карта, трябва да конфигурирате Stripe API ключове.</p>
+                                            <hr>
+                                            <p class="mb-0"><strong>Бърза настройка:</strong></p>
+                                            <ol class="mb-0">
+                                                <li>Отидете на <a href="https://dashboard.stripe.com/test/apikeys" target="_blank">Stripe Dashboard</a></li>
+                                                <li>Вземете вашите тест ключове (Publishable Key и Secret Key)</li>
+                                                <li>Обновете <code>appsettings.Development.json</code> с вашите ключове</li>
+                                                <li>Рестартирайте приложението</li>
+                                            </ol>
+                                            <p class="mt-2 mb-0"><small>За сега можете да използвате <strong>Плащане в брой</strong> - то работи веднага!</small></p>
+                                        </div>
+                                        <div class="d-grid gap-2">
+                                            <button class="btn btn-secondary" onclick="cancelPayment()">
+                                                Назад
+                                            </button>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div id="card-element" class="mb-3">
+                                            <!-- Stripe Elements will create form elements here -->
+                                        </div>
+                                        <div id="card-errors" role="alert" class="text-danger mb-3"></div>
+                                        <div class="d-grid gap-2">
+                                            <button class="btn btn-primary btn-lg" id="submitCardPayment" onclick="processCardPayment('@order.Id')">
+                                                💳 Плати @order.TotalAmount.ToString("F2") лв
+                                            </button>
+                                            <button class="btn btn-secondary" onclick="cancelPayment()">
+                                                Отказ
+                                            </button>
+                                        </div>
+                                        <div id="payment-loading" style="display: none;" class="text-center mt-3">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Зареждане...</span>
+                                            </div>
+                                            <p class="mt-2">Обработване на плащането...</p>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-danger">
+                            Поръчката не е намерена!
+                        </div>
+                        <a href="@Url.Action("Index", "Waiter")" class="btn btn-secondary">Назад</a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        let stripe = null;
+        let cardElement = null;
+        let paymentMethod = null;
+        let orderId = '@order?.Id';
+        let clientSecret = null;
+
+        $(document).ready(function() {
+            // Stripe will be initialized when card payment is selected
+        });
+
+        async function initializeStripe() {
+            const stripePublishableKey = '@ViewBag.StripePublishableKey';
+            const testMode = @(ViewBag.TestMode != null && ViewBag.TestMode == true ? "true" : "false");
+            
+            // In test mode, we'll skip Stripe initialization and use mock payment
+            if (testMode) {
+                console.log('Test mode enabled - using mock payment');
+                return;
+            }
+            
+            if (!stripePublishableKey || stripePublishableKey.includes('your_publishable_key')) {
+                console.error('Stripe publishable key is not configured');
+                return;
+            }
+
+            // Initialize Stripe with publishable key
+            stripe = Stripe(stripePublishableKey);
+            
+            const elements = stripe.elements();
+            cardElement = elements.create('card', {
+                style: {
+                    base: {
+                        fontSize: '16px',
+                        color: '#32325d',
+                    },
+                },
+            });
+            cardElement.mount('#card-element');
+            
+            cardElement.on('change', function(event) {
+                const displayError = document.getElementById('card-errors');
+                if (event.error) {
+                    displayError.textContent = event.error.message;
+                } else {
+                    displayError.textContent = '';
+                }
+            });
+        }
+
+        async function selectPaymentMethod(method) {
+            paymentMethod = method;
+            
+            // Reset all cards
+            $('.payment-method-card').removeClass('border-primary border-3').addClass('border');
+            
+            // Hide all payment sections
+            $('#cashPaymentSection').hide();
+            $('#cardPaymentSection').hide();
+            
+            // Show selected method
+            if (method === 'cash') {
+                $('#cashCard').removeClass('border').addClass('border-primary border-3');
+                $('#cashPaymentSection').slideDown();
+            } else if (method === 'card') {
+                $('#cardCard').removeClass('border').addClass('border-primary border-3');
+                $('#cardPaymentSection').slideDown();
+                
+                // Initialize Stripe and create payment intent when card is selected
+                if (!stripe) {
+                    await initializeStripe();
+                }
+                
+                // Create payment intent
+                if (!clientSecret) {
+                    await createPaymentIntent();
+                }
+            }
+        }
+
+        async function createPaymentIntent() {
+            try {
+                const response = await fetch('@Url.Action("CreatePaymentIntent", "Waiter")?orderId=' + orderId, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    clientSecret = data.clientSecret;
+                } else {
+                    alert('Грешка при създаването на плащането: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error creating payment intent:', error);
+                alert('Възникна грешка при инициализацията на плащането!');
+            }
+        }
+
+        function cancelPayment() {
+            window.location.href = '@Url.Action("Index", "Waiter")';
+        }
+
+        async function processCashPayment(orderId) {
+            if (!confirm('Потвърждавате ли плащането в брой?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('@Url.Action("ProcessCashPayment", "Waiter")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ orderId: orderId })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(result.message);
+                    window.location.href = '@Url.Action("Index", "Waiter")';
+                } else {
+                    alert('Грешка: ' + result.message);
+                }
+            } catch (error) {
+                alert('Възникна грешка при обработката на плащането!');
+                console.error(error);
+            }
+        }
+
+        async function processTestCardPayment(orderId) {
+            if (!confirm('Потвърждавате ли тестовото плащане с карта?')) {
+                return;
+            }
+
+            $('#payment-loading').show();
+            $('#submitCardPayment').prop('disabled', true);
+
+            try {
+                // Create mock payment intent
+                const createResponse = await fetch('@Url.Action("CreatePaymentIntent", "Waiter")?orderId=' + orderId, {
+                    method: 'POST'
+                });
+                const createData = await createResponse.json();
+                
+                if (!createData.success) {
+                    throw new Error(createData.message);
+                }
+
+                // Simulate payment success
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // Confirm payment - extract payment intent ID from client secret
+                const paymentIntentId = createData.paymentIntentId || createData.clientSecret.split('_secret_')[0];
+                
+                const confirmResponse = await fetch('@Url.Action("ConfirmCardPayment", "Waiter")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        orderId: orderId,
+                        paymentIntentId: paymentIntentId
+                    })
+                });
+
+                const result = await confirmResponse.json();
+                
+                if (result.success) {
+                    alert(result.message);
+                    window.location.href = '@Url.Action("Index", "Waiter")';
+                } else {
+                    $('#payment-loading').hide();
+                    $('#submitCardPayment').prop('disabled', false);
+                    alert('Грешка: ' + result.message);
+                }
+            } catch (error) {
+                $('#payment-loading').hide();
+                $('#submitCardPayment').prop('disabled', false);
+                alert('Възникна грешка при обработката на плащането!');
+                console.error(error);
+            }
+        }
+
+        async function processCardPayment(orderId) {
+            if (!stripe || !cardElement || !clientSecret) {
+                alert('Моля изчакайте зареждането на формата за плащане...');
+                return;
+            }
+
+            $('#payment-loading').show();
+            $('#submitCardPayment').prop('disabled', true);
+
+            try {
+                const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+                    payment_method: {
+                        card: cardElement,
+                    }
+                });
+
+                if (error) {
+                    $('#payment-loading').hide();
+                    $('#submitCardPayment').prop('disabled', false);
+                    document.getElementById('card-errors').textContent = error.message;
+                } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+                    // Confirm payment on server
+                    const response = await fetch('@Url.Action("ConfirmCardPayment", "Waiter")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ 
+                            orderId: orderId,
+                            paymentIntentId: paymentIntent.id
+                        })
+                    });
+
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert(result.message);
+                        window.location.href = '@Url.Action("Index", "Waiter")';
+                    } else {
+                        $('#payment-loading').hide();
+                        $('#submitCardPayment').prop('disabled', false);
+                        alert('Грешка: ' + result.message);
+                    }
+                }
+            } catch (error) {
+                $('#payment-loading').hide();
+                $('#submitCardPayment').prop('disabled', false);
+                alert('Възникна грешка при обработката на плащането!');
+                console.error(error);
+            }
+        }
+    </script>
+
+    <style>
+        .payment-method-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-method-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        #card-element {
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            background-color: white;
+        }
+    </style>
+}
+

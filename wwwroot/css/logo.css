@@ -1,0 +1,136 @@
+/* Restaurant Logo Styles - Златен Балкан */
+.restaurant-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.3s ease;
+}
+
+.restaurant-logo:hover {
+    transform: scale(1.05);
+    text-decoration: none;
+}
+
+.logo-icon {
+    position: relative;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+    animation: logoGlow 2s ease-in-out infinite;
+}
+
+.logo-icon::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    filter: blur(8px);
+    opacity: 0.6;
+    z-index: -1;
+    animation: logoPulse 2s ease-in-out infinite;
+}
+
+.logo-text {
+    font-size: 1.5rem;
+    background: linear-gradient(135deg, #ffd700 0%, #ffb347 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 0.5px;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-weight: 700;
+}
+
+.logo-subtitle {
+    font-size: 0.7rem;
+    color: #888;
+    font-weight: 400;
+    display: block;
+    margin-top: -4px;
+    letter-spacing: 1px;
+}
+
+@keyframes logoGlow {
+    0%, 100% {
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+    }
+    50% {
+        box-shadow: 0 4px 25px rgba(255, 215, 0, 0.7);
+    }
+}
+
+@keyframes logoPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.6;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+}
+
+.hero-logo {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.hero-logo .logo-icon {
+    width: 120px;
+    height: 120px;
+    border-radius: 25px;
+    font-size: 4rem;
+}
+
+.hero-logo .logo-text {
+    font-size: 4rem;
+}
+
+.navbar-logo .logo-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 10px;
+    font-size: 1.8rem;
+}
+
+.navbar-logo .logo-text {
+    font-size: 1.4rem;
+}
+
+@media (max-width: 768px) {
+    .hero-logo .logo-icon {
+        width: 90px;
+        height: 90px;
+        font-size: 3rem;
+    }
+    
+    .hero-logo .logo-text {
+        font-size: 2.8rem;
+    }
+    
+    .navbar-logo .logo-text {
+        font-size: 1.1rem;
+    }
+    
+    .navbar-logo .logo-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.5rem;
+    }
+}
+
+/* Logo SVG Style */
+.logo-svg {
+    width: 100%;
+    height: 100%;
+}

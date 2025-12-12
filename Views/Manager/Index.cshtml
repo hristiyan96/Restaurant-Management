@@ -1,0 +1,184 @@
+@using RestaurantManagement.Models
+@{
+    ViewData["Title"] = "Мениджър Панел - Статистика";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-4">📊 Мениджър Панел - Статистика</h2>
+            
+            <!-- Quick Stats Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="card bg-primary text-white shadow-lg">
+                        <div class="card-body">
+                            <h5 class="card-title">📅 Днес</h5>
+                            <h3 class="mb-0">@ViewBag.DailyRevenue.ToString("F2") лв</h3>
+                            <small>@ViewBag.DailyOrderCount поръчки</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-success text-white shadow-lg">
+                        <div class="card-body">
+                            <h5 class="card-title">📆 Тази седмица</h5>
+                            <h3 class="mb-0">@ViewBag.WeeklyRevenue.ToString("F2") лв</h3>
+                            <small>@ViewBag.WeeklyOrderCount поръчки</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-info text-white shadow-lg">
+                        <div class="card-body">
+                            <h5 class="card-title">📅 Този месец</h5>
+                            <h3 class="mb-0">@ViewBag.MonthlyRevenue.ToString("F2") лв</h3>
+                            <small>@ViewBag.MonthlyOrderCount поръчки</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-body text-center p-4">
+                            <div class="mb-3" style="font-size: 3rem;">💰</div>
+                            <h4 class="card-title">Детайлен финансов отчет</h4>
+                            <p class="text-muted">Погледнете дневни, седмични и месечни обороти</p>
+                            <a asp-action="RevenueReport" class="btn btn-primary btn-lg">Вижте отчет</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-body text-center p-4">
+                            <div class="mb-3" style="font-size: 3rem;">📈</div>
+                            <h4 class="card-title">Най-поръчвани артикули</h4>
+                            <p class="text-muted">Анализ на популярността на ястията и напитките</p>
+                            <a asp-action="PopularItems" class="btn btn-success btn-lg">Вижте анализ</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Method Breakdown -->
+            @if (ViewBag.RevenueByPaymentMethod != null && ((IEnumerable<dynamic>)ViewBag.RevenueByPaymentMethod).Any())
+            {
+                <div class="card shadow-lg mb-4">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">💳 Плащания днес (по метод)</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            @foreach (var item in (IEnumerable<dynamic>)ViewBag.RevenueByPaymentMethod)
+                            {
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                        <div>
+                                            <strong>@(item.PaymentMethod == PaymentMethod.Cash ? "💰 В брой" : "💳 С карта")</strong>
+                                            <div class="text-muted small">@item.Count поръчки</div>
+                                        </div>
+                                        <div class="text-end">
+                                            <h5 class="mb-0">@(((decimal)item.Revenue).ToString("F2")) лв</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Most Ordered Items (Top 5) -->
+            @if (ViewBag.MostOrderedItems != null && ((IEnumerable<dynamic>)ViewBag.MostOrderedItems).Any())
+            {
+                <div class="card shadow-lg mb-4">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">⭐ Топ 5 най-поръчвани артикули (за всички времена)</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Име</th>
+                                        <th>Категория</th>
+                                        <th class="text-end">Поръчано количество</th>
+                                        <th class="text-end">Общо приходи</th>
+                                        <th class="text-end">Брой поръчки</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        int rank = 1;
+                                        var items = ((IEnumerable<dynamic>)ViewBag.MostOrderedItems).Take(5);
+                                    }
+                                    @foreach (var item in items)
+                                    {
+                                        <tr>
+                                            <td><strong>@rank</strong></td>
+                                            <td>@item.Name</td>
+                                            <td><span class="badge bg-secondary">@item.Category</span></td>
+                                            <td class="text-end"><strong>@item.TotalQuantity</strong></td>
+                                            <td class="text-end text-success"><strong>@(((decimal)item.TotalRevenue).ToString("F2")) лв</strong></td>
+                                            <td class="text-end">@item.OrderCount</td>
+                                        </tr>
+                                        rank++;
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a asp-action="PopularItems" class="btn btn-outline-primary">Вижте пълния списък</a>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Recent Orders -->
+            @if (ViewBag.RecentOrders != null && ((List<Order>)ViewBag.RecentOrders).Any())
+            {
+                <div class="card shadow-lg">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">🕐 Последни поръчки днес</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Час</th>
+                                        <th>Маса</th>
+                                        <th>Сервитьор</th>
+                                        <th>Статус</th>
+                                        <th class="text-end">Сума</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var order in ((List<Order>)ViewBag.RecentOrders))
+                                    {
+                                        <tr>
+                                            <td>@order.CreatedAt.ToString("HH:mm")</td>
+                                            <td>Маса @order.Table.TableNumber</td>
+                                            <td>@(order.Waiter?.FullName ?? "N/A")</td>
+                                            <td>
+                                                <span class="badge bg-@(order.Status == OrderStatus.Paid ? "success" : order.Status == OrderStatus.Ready ? "warning" : order.Status == OrderStatus.Preparing ? "info" : "secondary")">
+                                                    @order.Status
+                                                </span>
+                                            </td>
+                                            <td class="text-end">@order.TotalAmount.ToString("F2") лв</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
