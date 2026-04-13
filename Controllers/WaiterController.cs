@@ -9,7 +9,7 @@ using Stripe;
 
 namespace RestaurantManagement.Controllers
 {
-    [Authorize(Roles = "Waiter,Manager")]
+    [Authorize(Roles = "User,Administrator")]
     public class WaiterController : Controller
     {
         private readonly ApplicationDbContext _context;

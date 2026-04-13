@@ -18,9 +18,9 @@ namespace RestaurantManagement.Controllers
         [HttpGet]
         public async Task<IActionResult> CreateManager()
         {
-            // Check if manager already exists
+            // Check if administrator already exists
             var existingManager = await _context.Users
-                .FirstOrDefaultAsync(u => u.Role == UserRole.Manager);
+                .FirstOrDefaultAsync(u => u.Role == UserRole.Administrator);
 
             if (existingManager != null)
             {
@@ -36,7 +36,7 @@ namespace RestaurantManagement.Controllers
                 Email = "manager@restaurant.com",
                 FullName = "Мениджър",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("manager123"),
-                Role = UserRole.Manager,
+                Role = UserRole.Administrator,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -54,6 +54,9 @@ namespace RestaurantManagement.Controllers
         }
     }
 }
+
+
+
 
 
 

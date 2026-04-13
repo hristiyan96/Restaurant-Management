@@ -6,7 +6,7 @@ using RestaurantManagement.Models;
 
 namespace RestaurantManagement.Controllers
 {
-    [Authorize(Roles = "Manager")]
+    [Authorize(Roles = "Administrator")]
     public class ManagerController : Controller
     {
         private readonly ApplicationDbContext _context;

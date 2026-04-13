@@ -31,7 +31,7 @@
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Kitchen" asp-action="Index">👨‍🍳 Кухня</a>
                             </li>
-                            @if (User.IsInRole("Manager"))
+                            @if (User.IsInRole("Administrator"))
                             {
                                 <li class="nav-item">
                                     <a class="nav-link" asp-controller="Manager" asp-action="Index">📊 Мениджър</a>

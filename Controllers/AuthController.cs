@@ -52,9 +52,9 @@ new ClaimsPrincipal(claimsIdentity));
                 // Redirect based on role
                 return user.Role switch
                 {
-                    UserRole.Waiter => RedirectToAction("Index", "Waiter"),
+                    UserRole.User => RedirectToAction("Index", "Waiter"),
                     UserRole.Kitchen => RedirectToAction("Index", "Kitchen"),
-                    UserRole.Manager => RedirectToAction("Index", "Manager"),
+                    UserRole.Administrator => RedirectToAction("Index", "Manager"),
                     _ => RedirectToAction("Index", "Home")
                 };
             }
@@ -87,7 +87,7 @@ new ClaimsPrincipal(claimsIdentity));
                 Email = model.Email,
                 FullName = model.FullName,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password),
-                Role = UserRole.Waiter,
+                Role = UserRole.User,
                 CreatedAt = DateTime.UtcNow
             };
 

@@ -4,9 +4,9 @@ namespace RestaurantManagement.Models
 {
     public enum UserRole
     {
-        Waiter,
+        User,
         Kitchen,
-        Manager
+        Administrator
     }
 
     public class User
@@ -23,7 +23,7 @@ namespace RestaurantManagement.Models
         [Required]
         public string PasswordHash { get; set; } = string.Empty;
         
-        public UserRole Role { get; set; } = UserRole.Waiter;
+        public UserRole Role { get; set; } = UserRole.User;
         
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         

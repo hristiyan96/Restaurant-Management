@@ -7,7 +7,7 @@ using RestaurantManagement.Services;
 
 namespace RestaurantManagement.Controllers
 {
-    [Authorize(Roles = "Kitchen,Manager,Waiter")]
+    [Authorize(Roles = "Kitchen,Administrator,User")]
     public class KitchenController : Controller
     {
         private readonly ApplicationDbContext _context;
