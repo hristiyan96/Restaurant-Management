@@ -54,7 +54,7 @@ new ClaimsPrincipal(claimsIdentity));
                 {
                     UserRole.User => RedirectToAction("Index", "Waiter"),
                     UserRole.Kitchen => RedirectToAction("Index", "Kitchen"),
-                    UserRole.Administrator => RedirectToAction("Index", "Manager"),
+                    UserRole.Administrator => RedirectToAction("Index", "Dashboard", new { area = "Admin" }),
                     _ => RedirectToAction("Index", "Home")
                 };
             }
