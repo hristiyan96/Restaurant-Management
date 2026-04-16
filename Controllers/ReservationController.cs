@@ -85,10 +85,21 @@ namespace RestaurantManagement.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> CheckAvailability([FromBody] CheckAvailabilityRequest request)
         {
             try
             {
+                if (request == null || request.NumberOfGuests < 1 || request.NumberOfGuests > 20)
+                {
+                    return Json(new { success = false, message = "Невалиден брой гости." });
+                }
+
+                if (request.ReservationDateTime <= DateTime.Now)
+                {
+                    return Json(new { success = false, message = "Резервацията трябва да бъде в бъдещо време." });
+                }
+
                 var availableTables = await _reservationService.GetAvailableTablesAsync(
                     request.ReservationDateTime,
                     request.NumberOfGuests
@@ -148,6 +159,9 @@ namespace RestaurantManagement.Controllers
         public int NumberOfGuests { get; set; }
     }
 }
+
+
+
 
 
 

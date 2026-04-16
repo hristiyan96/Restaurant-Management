@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RestaurantManagement.Data;
@@ -5,6 +6,7 @@ using RestaurantManagement.Models;
 
 namespace RestaurantManagement.Controllers
 {
+    [Authorize(Roles = "Administrator")]
     public class MenuController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -15,6 +17,7 @@ namespace RestaurantManagement.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SeedMenuItems()
         {
             try
@@ -44,6 +47,9 @@ namespace RestaurantManagement.Controllers
         }
     }
 }
+
+
+
 
 
 

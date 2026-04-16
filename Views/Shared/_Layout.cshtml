@@ -46,7 +46,12 @@
                                 <span class="navbar-text text-white me-3">Здравейте, @User.Identity.Name!</span>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Auth" asp-action="Logout">Изход</a>
+                                <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="nav-link btn btn-link text-decoration-none p-0 border-0">
+                                        Изход
+                                    </button>
+                                </form>
                             </li>
                         }
                         else

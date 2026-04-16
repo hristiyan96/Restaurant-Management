@@ -81,10 +81,16 @@ namespace RestaurantManagement.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> StartPreparing(Guid orderId)
         {
             try
             {
+                if (orderId == Guid.Empty)
+                {
+                    return Json(new { success = false, message = "Невалидна поръчка." });
+                }
+
                 await _orderService.UpdateOrderStatusAsync(orderId, OrderStatus.Preparing);
                 return Json(new { success = true });
             }
@@ -95,10 +101,16 @@ namespace RestaurantManagement.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> MarkReady(Guid orderId)
         {
             try
             {
+                if (orderId == Guid.Empty)
+                {
+                    return Json(new { success = false, message = "Невалидна поръчка." });
+                }
+
                 await _orderService.UpdateOrderStatusAsync(orderId, OrderStatus.Ready);
                 return Json(new { success = true });
             }
@@ -109,15 +121,25 @@ namespace RestaurantManagement.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> MarkItemReady(Guid orderItemId)
         {
             try
             {
+                if (orderItemId == Guid.Empty)
+                {
+                    return Json(new { success = false, message = "Невалиден артикул." });
+                }
+
                 var orderItem = await _context.OrderItems.FindAsync(orderItemId);
                 if (orderItem != null)
                 {
                     orderItem.IsReady = true;
                     await _context.SaveChangesAsync();
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Артикулът не е намерен." });
                 }
                 return Json(new { success = true });
             }

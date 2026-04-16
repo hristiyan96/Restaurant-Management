@@ -174,8 +174,14 @@
     </div>
 </div>
 
+@Html.AntiForgeryToken()
+
 @section Scripts {
     <script>
+        function getAntiForgeryToken() {
+            return document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        }
+
         function startPreparing(orderId) {
             if (!confirm('Наистина ли искате да започнете приготвянето на тази поръчка?')) {
                 return;
@@ -184,6 +190,9 @@
             $.ajax({
                 url: '@Url.Action("StartPreparing", "Kitchen")',
                 type: 'POST',
+                headers: {
+                    'RequestVerificationToken': getAntiForgeryToken()
+                },
                 data: { orderId: orderId },
                 success: function(result) {
                     if (result.success) {
@@ -206,6 +215,9 @@
             $.ajax({
                 url: '@Url.Action("MarkReady", "Kitchen")',
                 type: 'POST',
+                headers: {
+                    'RequestVerificationToken': getAntiForgeryToken()
+                },
                 data: { orderId: orderId },
                 success: function(result) {
                     if (result.success) {
@@ -224,6 +236,9 @@
             $.ajax({
                 url: '@Url.Action("MarkItemReady", "Kitchen")',
                 type: 'POST',
+                headers: {
+                    'RequestVerificationToken': getAntiForgeryToken()
+                },
                 data: { orderItemId: orderItemId },
                 success: function(result) {
                     if (result.success) {

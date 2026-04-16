@@ -202,6 +202,8 @@
     </div>
 </div>
 
+@Html.AntiForgeryToken()
+
 @section Scripts {
     <script src="https://js.stripe.com/v3/"></script>
     <script>
@@ -210,6 +212,10 @@
         let paymentMethod = null;
         let orderId = '@order?.Id';
         let clientSecret = null;
+
+        function getAntiForgeryToken() {
+            return document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        }
 
         $(document).ready(function() {
             // Stripe will be initialized when card payment is selected
@@ -287,7 +293,10 @@
         async function createPaymentIntent() {
             try {
                 const response = await fetch('@Url.Action("CreatePaymentIntent", "Waiter")?orderId=' + orderId, {
-                    method: 'POST'
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': getAntiForgeryToken()
+                    }
                 });
                 const data = await response.json();
                 
@@ -316,6 +325,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'RequestVerificationToken': getAntiForgeryToken()
                     },
                     body: JSON.stringify({ orderId: orderId })
                 });
@@ -345,7 +355,10 @@
             try {
                 // Create mock payment intent
                 const createResponse = await fetch('@Url.Action("CreatePaymentIntent", "Waiter")?orderId=' + orderId, {
-                    method: 'POST'
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': getAntiForgeryToken()
+                    }
                 });
                 const createData = await createResponse.json();
                 
@@ -363,6 +376,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'RequestVerificationToken': getAntiForgeryToken()
                     },
                     body: JSON.stringify({ 
                         orderId: orderId,
@@ -414,6 +428,7 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'RequestVerificationToken': getAntiForgeryToken()
                         },
                         body: JSON.stringify({ 
                             orderId: orderId,

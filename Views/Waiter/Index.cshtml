@@ -139,6 +139,7 @@
 </div>
 
 <!-- Order Modal -->
+@Html.AntiForgeryToken()
 <div class="modal fade" id="orderModal" tabindex="-1" aria-labelledby="orderModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -165,6 +166,10 @@
     <script>
         let selectedTableId = null;
         let currentOrder = [];
+
+        function getAntiForgeryToken() {
+            return document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        }
 
         $(document).ready(function() {
             // Table selection
@@ -228,6 +233,9 @@
                     url: '@Url.Action("CreateOrder", "Waiter")',
                     type: 'POST',
                     contentType: 'application/json',
+                    headers: {
+                        'RequestVerificationToken': getAntiForgeryToken()
+                    },
                     data: JSON.stringify(orderData),
                     success: function(result) {
                         if (result.success) {
@@ -295,6 +303,9 @@
             $.ajax({
                 url: '@Url.Action("UpdateOrderStatus", "Waiter")',
                 type: 'POST',
+                headers: {
+                    'RequestVerificationToken': getAntiForgeryToken()
+                },
                 data: { orderId: orderId, status: status },
                 success: function(result) {
                     if (result.success) {

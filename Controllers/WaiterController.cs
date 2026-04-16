@@ -50,10 +50,21 @@ namespace RestaurantManagement.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)
         {
             try
             {
+                if (request == null || request.TableId == Guid.Empty || request.Items == null || !request.Items.Any())
+                {
+                    return Json(new { success = false, message = "Невалидна поръчка." });
+                }
+
+                if (request.Items.Any(i => i.MenuItemId == Guid.Empty || i.Quantity <= 0))
+                {
+                    return Json(new { success = false, message = "Поръчката съдържа невалидни артикули." });
+                }
+
                 var waiterId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "");
                 var orderId = await _orderService.CreateOrderAsync(request.TableId, waiterId, request.Items);
                 
@@ -66,10 +77,16 @@ namespace RestaurantManagement.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateOrderStatus(Guid orderId, OrderStatus status)
         {
             try
             {
+                if (orderId == Guid.Empty || !Enum.IsDefined(typeof(OrderStatus), status))
+                {
+                    return Json(new { success = false, message = "Невалидна заявка за статус." });
+                }
+
                 await _orderService.UpdateOrderStatusAsync(orderId, status);
                 return Json(new { success = true });
             }
@@ -125,10 +142,16 @@ namespace RestaurantManagement.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ProcessCashPayment([FromBody] PaymentRequest request)
         {
             try
             {
+                if (request == null || request.OrderId == Guid.Empty)
+                {
+                    return Json(new { success = false, message = "Невалидна заявка за плащане." });
+                }
+
                 var order = await _context.Orders
                     .Include(o => o.Table)
                     .FirstOrDefaultAsync(o => o.Id == request.OrderId);
@@ -158,10 +181,16 @@ namespace RestaurantManagement.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreatePaymentIntent(Guid orderId)
         {
             try
             {
+                if (orderId == Guid.Empty)
+                {
+                    return Json(new { success = false, message = "Невалидна поръчка." });
+                }
+
                 var order = await _context.Orders
                     .FirstOrDefaultAsync(o => o.Id == orderId);
 
@@ -238,10 +267,16 @@ namespace RestaurantManagement.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ConfirmCardPayment([FromBody] CardPaymentRequest request)
         {
             try
             {
+                if (request == null || request.OrderId == Guid.Empty || string.IsNullOrWhiteSpace(request.PaymentIntentId))
+                {
+                    return Json(new { success = false, message = "Невалидна заявка за плащане." });
+                }
+
                 var testMode = _configuration.GetValue<bool>("Stripe:TestMode", false);
                 Order? order = null;
                 
