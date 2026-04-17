@@ -19,49 +19,55 @@ namespace RestaurantManagement.Controllers
             _orderService = orderService;
         }
 
-        public async Task<IActionResult> Index(string filter = "active")
+        public async Task<IActionResult> Index(string filter = "active", int page = 1, int pageSize = 9)
         {
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 6, 24);
+
             IQueryable<Order> ordersQuery = _context.Orders
                 .Include(o => o.Table)
                 .Include(o => o.Waiter)
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.MenuItem);
 
-            List<Order> orders;
-            
+            IQueryable<Order> filteredQuery;
+
             switch (filter.ToLower())
             {
                 case "pending":
-                    orders = await ordersQuery
+                    filteredQuery = ordersQuery
                         .Where(o => o.Status == OrderStatus.Pending)
-                        .OrderBy(o => o.CreatedAt)
-                        .ToListAsync();
+                        .OrderBy(o => o.CreatedAt);
                     break;
                 case "preparing":
-                    orders = await ordersQuery
+                    filteredQuery = ordersQuery
                         .Where(o => o.Status == OrderStatus.Preparing)
-                        .OrderBy(o => o.CreatedAt)
-                        .ToListAsync();
+                        .OrderBy(o => o.CreatedAt);
                     break;
                 case "ready":
-                    orders = await ordersQuery
+                    filteredQuery = ordersQuery
                         .Where(o => o.Status == OrderStatus.Ready)
-                        .OrderBy(o => o.CreatedAt)
-                        .ToListAsync();
+                        .OrderBy(o => o.CreatedAt);
                     break;
                 case "all":
-                    orders = await ordersQuery
-                        .OrderByDescending(o => o.CreatedAt)
-                        .Take(50)
-                        .ToListAsync();
+                    filteredQuery = ordersQuery
+                        .OrderByDescending(o => o.CreatedAt);
                     break;
                 default: // "active"
-                    orders = await ordersQuery
+                    filteredQuery = ordersQuery
                         .Where(o => o.Status == OrderStatus.Pending || o.Status == OrderStatus.Preparing)
-                        .OrderBy(o => o.CreatedAt)
-                        .ToListAsync();
+                        .OrderBy(o => o.CreatedAt);
                     break;
             }
+
+            var totalOrdersForFilter = await filteredQuery.CountAsync();
+            var totalPages = Math.Max(1, (int)Math.Ceiling(totalOrdersForFilter / (double)pageSize));
+            page = Math.Min(page, totalPages);
+
+            var orders = await filteredQuery
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
 
             // Statistics
             var todayStart = DateTime.UtcNow.Date;
@@ -76,6 +82,10 @@ namespace RestaurantManagement.Controllers
 
             ViewBag.Filter = filter;
             ViewBag.Stats = stats;
+            ViewBag.CurrentPage = page;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalOrdersForFilter = totalOrdersForFilter;
 
             return View(orders);
         }

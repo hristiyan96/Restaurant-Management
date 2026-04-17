@@ -3,6 +3,10 @@
     ViewData["Title"] = "Кухненски панел";
     var filter = ViewBag.Filter as string ?? "active";
     var stats = ViewBag.Stats;
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    int pageSize = ViewBag.PageSize ?? 9;
+    int totalOrdersForFilter = ViewBag.TotalOrdersForFilter ?? 0;
 }
 
 <div class="container-fluid mt-4">
@@ -48,11 +52,14 @@
 
             <!-- Filter Buttons -->
             <div class="btn-group mb-3" role="group">
-                <a href="?filter=active" class="btn btn-@(filter == "active" ? "primary" : "outline-primary")">Активни</a>
-                <a href="?filter=pending" class="btn btn-@(filter == "pending" ? "warning" : "outline-warning")">Чакащи (@(stats?.Pending ?? 0))</a>
-                <a href="?filter=preparing" class="btn btn-@(filter == "preparing" ? "info" : "outline-info")">Приготвяне (@(stats?.Preparing ?? 0))</a>
-                <a href="?filter=ready" class="btn btn-@(filter == "ready" ? "success" : "outline-success")">Готови (@(stats?.Ready ?? 0))</a>
-                <a href="?filter=all" class="btn btn-@(filter == "all" ? "secondary" : "outline-secondary")">Всички</a>
+                <a href="@Url.Action("Index", "Kitchen", new { filter = "active", page = 1, pageSize })" class="btn btn-@(filter == "active" ? "primary" : "outline-primary")">Активни</a>
+                <a href="@Url.Action("Index", "Kitchen", new { filter = "pending", page = 1, pageSize })" class="btn btn-@(filter == "pending" ? "warning" : "outline-warning")">Чакащи (@(stats?.Pending ?? 0))</a>
+                <a href="@Url.Action("Index", "Kitchen", new { filter = "preparing", page = 1, pageSize })" class="btn btn-@(filter == "preparing" ? "info" : "outline-info")">Приготвяне (@(stats?.Preparing ?? 0))</a>
+                <a href="@Url.Action("Index", "Kitchen", new { filter = "ready", page = 1, pageSize })" class="btn btn-@(filter == "ready" ? "success" : "outline-success")">Готови (@(stats?.Ready ?? 0))</a>
+                <a href="@Url.Action("Index", "Kitchen", new { filter = "all", page = 1, pageSize })" class="btn btn-@(filter == "all" ? "secondary" : "outline-secondary")">Всички</a>
+            </div>
+            <div class="text-muted mb-2">
+                Показани: @Model.Count от @totalOrdersForFilter поръчки (страница @currentPage от @totalPages)
             </div>
         </div>
     </div>
@@ -172,6 +179,26 @@
             </div>
         }
     </div>
+
+    @if (totalPages > 1)
+    {
+        <nav aria-label="Kitchen orders pagination" class="mt-3">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", "Kitchen", new { filter, page = currentPage - 1, pageSize })">Назад</a>
+                </li>
+                @for (int p = 1; p <= totalPages; p++)
+                {
+                    <li class="page-item @(p == currentPage ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("Index", "Kitchen", new { filter, page = p, pageSize })">@p</a>
+                    </li>
+                }
+                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", "Kitchen", new { filter, page = currentPage + 1, pageSize })">Напред</a>
+                </li>
+            </ul>
+        </nav>
+    }
 </div>
 
 @Html.AntiForgeryToken()
