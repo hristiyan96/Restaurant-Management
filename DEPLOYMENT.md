@@ -69,3 +69,7 @@ After deployment, update `README.md`:
 
 - replace `TODO: add deployed URL before final submission` with real public URL
 - optionally add screenshots/video link
+
+## 7) Rollback Note
+
+Keep the latest successful publish artifacts so you can roll back quickly if a production issue appears after release.
