@@ -126,3 +126,11 @@ Public production URL:
 - [x] pagination + filtering
 - [x] unit tests with >=65% service coverage
 - [ ] public deployment URL added
+
+## Manual QA Checklist
+
+- [ ] Register, login, and logout workflows
+- [ ] Waiter order creation and status transitions
+- [ ] Kitchen processing and item readiness controls
+- [ ] Reservation creation and availability checks
+- [ ] Admin reports and filtering screens
