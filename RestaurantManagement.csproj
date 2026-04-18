@@ -24,6 +24,7 @@
     <Compile Remove="RestaurantManagement.Tests/**/*.cs" />
     <EmbeddedResource Remove="RestaurantManagement.Tests/**/*" />
     <None Remove="RestaurantManagement.Tests/**/*" />
+    <Content Remove="RestaurantManagement.Tests/**/*" />
   </ItemGroup>
 
 </Project>
