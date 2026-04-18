@@ -182,6 +182,17 @@ public class OrderServiceTests
         Assert.Equal(waiter.Id, created?.WaiterId);
     }
 
+    [Fact]
+    public async Task UpdateOrderStatusAsync_ShouldNotThrow_WhenOrderMissing()
+    {
+        using var context = CreateContext();
+        var service = new OrderService(context);
+
+        var ex = await Record.ExceptionAsync(() => service.UpdateOrderStatusAsync(Guid.NewGuid(), OrderStatus.Ready));
+
+        Assert.Null(ex);
+    }
+
     private static ApplicationDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
