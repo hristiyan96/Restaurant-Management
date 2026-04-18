@@ -20,4 +20,10 @@
     <PackageReference Include="Stripe.net" Version="50.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="RestaurantManagement.Tests/**/*.cs" />
+    <EmbeddedResource Remove="RestaurantManagement.Tests/**/*" />
+    <None Remove="RestaurantManagement.Tests/**/*" />
+  </ItemGroup>
+
 </Project>
