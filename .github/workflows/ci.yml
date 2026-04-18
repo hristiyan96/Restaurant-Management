@@ -35,3 +35,9 @@ jobs:
 
       - name: Test with coverage
         run: dotnet test RestaurantManagement.Tests/RestaurantManagement.Tests.csproj --configuration Release --no-build --collect:"XPlat Code Coverage"
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-coverage
+          path: RestaurantManagement.Tests/TestResults/**/coverage.cobertura.xml
