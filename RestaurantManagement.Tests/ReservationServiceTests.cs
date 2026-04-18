@@ -229,6 +229,20 @@ public class ReservationServiceTests
         Assert.Equal(6, available[0].Seats);
     }
 
+    [Fact]
+    public async Task IsTableAvailableAsync_ShouldReturnFalse_WhenTableMarkedOccupied()
+    {
+        using var context = CreateContext();
+        var table = new Table { Id = Guid.NewGuid(), TableNumber = 203, Seats = 4, IsOccupied = true };
+        context.Tables.Add(table);
+        await context.SaveChangesAsync();
+
+        var service = new ReservationService(context);
+        var available = await service.IsTableAvailableAsync(table.Id, DateTime.UtcNow.AddHours(8));
+
+        Assert.False(available);
+    }
+
     private static ApplicationDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
