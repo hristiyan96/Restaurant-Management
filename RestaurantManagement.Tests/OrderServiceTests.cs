@@ -193,6 +193,25 @@ public class OrderServiceTests
         Assert.Null(ex);
     }
 
+    [Fact]
+    public async Task CreateOrderAsync_ShouldStoreOrderItemNotes()
+    {
+        using var context = CreateContext();
+        var table = new Table { Id = Guid.NewGuid(), TableNumber = 205, Seats = 2 };
+        var waiter = new User { Id = Guid.NewGuid(), Email = "notes@example.com", FullName = "Notes Waiter", PasswordHash = "hash", Role = UserRole.User };
+        var item = new MenuItem { Id = Guid.NewGuid(), Name = "Soup", Category = "Food", Price = 4m };
+        context.Tables.Add(table);
+        context.Users.Add(waiter);
+        context.MenuItems.Add(item);
+        await context.SaveChangesAsync();
+
+        var service = new OrderService(context);
+        var orderId = await service.CreateOrderAsync(table.Id, waiter.Id, new List<OrderItemRequest> { new() { MenuItemId = item.Id, Quantity = 1, Notes = "No salt" } });
+
+        var orderItem = await context.OrderItems.FirstAsync(oi => oi.OrderId == orderId);
+        Assert.Equal("No salt", orderItem.Notes);
+    }
+
     private static ApplicationDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
