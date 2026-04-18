@@ -22,6 +22,8 @@ Before first startup, apply migrations against production DB:
 
 Or execute migration in CI/CD release stage.
 
+Always create a database backup/snapshot before applying schema changes in production.
+
 ## 3) Build and Publish
 
 Local publish command:
