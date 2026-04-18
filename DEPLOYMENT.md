@@ -27,6 +27,7 @@ Or execute migration in CI/CD release stage.
 Local publish command:
 
 - `dotnet publish RestaurantManagement.csproj -c Release -o ./publish`
+- `dotnet test RestaurantManagement.sln -c Release`
 
 Deploy the `publish` folder to your host.
 
