@@ -163,6 +163,25 @@ public class OrderServiceTests
         Assert.Null(fetched);
     }
 
+    [Fact]
+    public async Task CreateOrderAsync_ShouldPersistProvidedWaiterId()
+    {
+        using var context = CreateContext();
+        var table = new Table { Id = Guid.NewGuid(), TableNumber = 204, Seats = 2 };
+        var waiter = new User { Id = Guid.NewGuid(), Email = "persist@example.com", FullName = "Persist Waiter", PasswordHash = "hash", Role = UserRole.User };
+        var item = new MenuItem { Id = Guid.NewGuid(), Name = "Tea", Category = "Drinks", Price = 2m };
+        context.Tables.Add(table);
+        context.Users.Add(waiter);
+        context.MenuItems.Add(item);
+        await context.SaveChangesAsync();
+
+        var service = new OrderService(context);
+        var orderId = await service.CreateOrderAsync(table.Id, waiter.Id, new List<OrderItemRequest> { new() { MenuItemId = item.Id, Quantity = 1 } });
+
+        var created = await context.Orders.FindAsync(orderId);
+        Assert.Equal(waiter.Id, created?.WaiterId);
+    }
+
     private static ApplicationDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
