@@ -57,6 +57,10 @@ Restaurant Management System is an ASP.NET Core MVC web application for daily re
 
 ## Running Locally
 
+Prerequisites:
+- .NET 8 SDK
+- SQL Server / LocalDB
+
 1. Configure connection string in `appsettings.json`
 2. Apply database migrations:
    - `dotnet ef database update`
