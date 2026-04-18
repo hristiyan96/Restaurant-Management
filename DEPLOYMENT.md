@@ -39,6 +39,12 @@ Deploy the `publish` folder to your host.
 3. Set Stripe keys in App Service configuration
 4. Deploy from GitHub repository or published artifacts
 
+Required App Service configuration keys:
+- `ConnectionStrings__DefaultConnection`
+- `Stripe__PublishableKey`
+- `Stripe__SecretKey`
+- `ASPNETCORE_ENVIRONMENT=Production`
+
 ## IIS
 
 1. Install ASP.NET Core Hosting Bundle
