@@ -202,6 +202,17 @@ public class ReservationServiceTests
         Assert.Equal("Match", reservations[0].CustomerName);
     }
 
+    [Fact]
+    public async Task GetReservationByIdAsync_ShouldReturnNull_WhenMissing()
+    {
+        using var context = CreateContext();
+        var service = new ReservationService(context);
+
+        var reservation = await service.GetReservationByIdAsync(Guid.NewGuid());
+
+        Assert.Null(reservation);
+    }
+
     private static ApplicationDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
