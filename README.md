@@ -26,6 +26,12 @@ Restaurant Management System is an ASP.NET Core MVC web application for daily re
 
 Note: demo bootstrap credentials/scripts are for local evaluation only and should be disabled in production environments.
 
+## Role Matrix
+
+- `User`: waiter operations, order creation and payment flow
+- `Kitchen`: kitchen board, item readiness, and order status progress
+- `Administrator`: admin area dashboard and reports
+
 ## Architecture Overview
 
 - `Controllers/` - MVC controllers for each business area
