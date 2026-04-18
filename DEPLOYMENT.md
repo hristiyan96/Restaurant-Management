@@ -55,6 +55,7 @@ Required App Service configuration keys:
 ## 5) Verification Checklist
 
 - Application starts without exception
+- Home page responds within acceptable time under normal load
 - Login/register work
 - Admin area access works only for `Administrator`
 - Waiter/Kitchen flows work
