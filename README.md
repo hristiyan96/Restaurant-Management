@@ -24,6 +24,8 @@ Restaurant Management System is an ASP.NET Core MVC web application for daily re
 - Cash and card payment flows
 - Database seeding for core restaurant data
 
+Note: demo bootstrap credentials/scripts are for local evaluation only and should be disabled in production environments.
+
 ## Architecture Overview
 
 - `Controllers/` - MVC controllers for each business area
