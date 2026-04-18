@@ -213,6 +213,22 @@ public class ReservationServiceTests
         Assert.Null(reservation);
     }
 
+    [Fact]
+    public async Task GetAvailableTablesAsync_ShouldRespectMinimumSeatCount()
+    {
+        using var context = CreateContext();
+        context.Tables.AddRange(
+            new Table { Id = Guid.NewGuid(), TableNumber = 201, Seats = 2 },
+            new Table { Id = Guid.NewGuid(), TableNumber = 202, Seats = 6 });
+        await context.SaveChangesAsync();
+
+        var service = new ReservationService(context);
+        var available = await service.GetAvailableTablesAsync(DateTime.UtcNow.AddHours(6), 4);
+
+        Assert.Single(available);
+        Assert.Equal(6, available[0].Seats);
+    }
+
     private static ApplicationDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
