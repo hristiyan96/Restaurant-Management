@@ -57,6 +57,11 @@ Note: demo bootstrap credentials/scripts are for local evaluation only and shoul
 - Kitchen orders support filter-aware pagination (`filter`, `page`, `pageSize`)
 - Manager/admin reports support search/filter by date and category
 
+## Known Limitations
+
+- Authentication is implemented with custom cookie auth instead of full ASP.NET Identity stack.
+- Public deployment URL must be added before final submission.
+
 ## Database and Seeding
 
 - `ApplicationDbContext` contains core sets and relationships
